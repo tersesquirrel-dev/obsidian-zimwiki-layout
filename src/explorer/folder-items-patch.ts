@@ -1,57 +1,33 @@
-import { TAbstractFile, TFolder } from 'obsidian';
-import type { FileExplorerView } from './file-explorer';
+import { TFolder } from 'obsidian';
+import { FileExplorerView, replaceMethod } from './file-explorer';
 import { sortInterleaved, usesInterleavedSort } from './interleaved-sort';
 import { isVisibleInExplorer } from './visibility';
 
-type GetSortedFolderItems = FileExplorerView['getSortedFolderItems'];
-
-/** File explorer tree items carry the vault file they represent. */
-interface ExplorerItem {
-	file: TAbstractFile;
-}
-
-function isExplorerItem(item: unknown): item is ExplorerItem {
-	return (
-		typeof item === 'object' &&
-		item !== null &&
-		(item as Partial<ExplorerItem>).file instanceof TAbstractFile
-	);
-}
-
 /**
  * Replaces the file explorer's per-folder listing so that files and folders
- * are interleaved by name and non-Markdown files are hidden.
+ * are interleaved by name and hidden files are left out.
  * Returns a function that restores the original.
  */
 export function patchFolderItems(view: FileExplorerView): () => void {
 	const proto = Object.getPrototypeOf(view) as FileExplorerView;
-	const original: GetSortedFolderItems = proto.getSortedFolderItems;
+	const original = proto.getSortedFolderItems;
 
-	const patched: GetSortedFolderItems = function (
+	return replaceMethod(proto, 'getSortedFolderItems', function (
 		this: FileExplorerView,
 		folder: TFolder,
 	) {
-		let items: unknown[];
-		if (usesInterleavedSort(this.sortOrder)) {
-			items = [];
-			for (const child of sortInterleaved(folder.children, this.sortOrder)) {
-				const item = this.fileItems[child.path];
-				if (item) items.push(item);
-			}
-		} else {
-			items = original.call(this, folder);
+		if (!usesInterleavedSort(this.sortOrder)) {
+			return original
+				.call(this, folder)
+				.filter((item) => isVisibleInExplorer(item.file));
 		}
 
-		return items.filter(
-			(item) => !isExplorerItem(item) || isVisibleInExplorer(item.file),
-		);
-	};
-
-	proto.getSortedFolderItems = patched;
-
-	return () => {
-		if (proto.getSortedFolderItems === patched) {
-			proto.getSortedFolderItems = original;
+		const items = [];
+		for (const child of sortInterleaved(folder.children, this.sortOrder)) {
+			if (!isVisibleInExplorer(child)) continue;
+			const item = this.fileItems[child.path];
+			if (item) items.push(item);
 		}
-	};
+		return items;
+	});
 }
