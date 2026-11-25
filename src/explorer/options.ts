@@ -7,6 +7,7 @@ let current: Readonly<ZimWikiLayoutSettings> = {
 	showOnlyNotes: false,
 	interleavedSort: false,
 	folderNotes: false,
+	pageAttachmentFolder: false,
 };
 
 export function setExplorerOptions(settings: ZimWikiLayoutSettings): void {

@@ -1,4 +1,5 @@
 import { Plugin } from 'obsidian';
+import { registerPageAttachments } from './attachments/page-attachments';
 import { registerExplorerPatches } from './explorer';
 import { setExplorerOptions } from './explorer/options';
 import {
@@ -19,6 +20,7 @@ export default class ZimWikiLayoutPlugin extends Plugin {
 		);
 		this.applySettings();
 		this.refreshExplorer = registerExplorerPatches(this);
+		registerPageAttachments(this, () => this.settings.pageAttachmentFolder);
 		this.addSettingTab(new ZimWikiLayoutSettingTab(this.app, this));
 	}
 

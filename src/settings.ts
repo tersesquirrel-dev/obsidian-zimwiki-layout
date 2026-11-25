@@ -13,6 +13,8 @@ export interface ZimWikiLayoutSettings {
 	interleavedSort: boolean;
 	/** Merge a note with the same-named folder beside it into one item. */
 	folderNotes: boolean;
+	/** Save attachments in a folder named after the page they are added to. */
+	pageAttachmentFolder: boolean;
 }
 
 export const DEFAULT_SETTINGS: ZimWikiLayoutSettings = {
@@ -21,6 +23,7 @@ export const DEFAULT_SETTINGS: ZimWikiLayoutSettings = {
 	showOnlyNotes: true,
 	interleavedSort: true,
 	folderNotes: true,
+	pageAttachmentFolder: true,
 };
 
 type ToggleKey = {
@@ -70,6 +73,12 @@ export class ZimWikiLayoutSettingTab extends PluginSettingTab {
 			'showFolderCount',
 			'Show folder count',
 			'Show how many sub-pages each folder has.',
+		);
+		this.addToggle(
+			containerEl,
+			'pageAttachmentFolder',
+			'Store attachments with the page',
+			'Save pasted and dropped attachments in a folder named after the page, beside the note. Overrides the attachment location in Files and links.',
 		);
 
 		new Setting(containerEl)
