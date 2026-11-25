@@ -2,6 +2,7 @@ import { Plugin } from 'obsidian';
 import { registerPageAttachments } from './attachments/page-attachments';
 import { registerExplorerPatches } from './explorer';
 import { setExplorerOptions } from './explorer/options';
+import { registerEmptyUntitledCleanup } from './notes/empty-untitled';
 import {
 	DEFAULT_SETTINGS,
 	ZimWikiLayoutSettings,
@@ -21,6 +22,7 @@ export default class ZimWikiLayoutPlugin extends Plugin {
 		this.applySettings();
 		this.refreshExplorer = registerExplorerPatches(this);
 		registerPageAttachments(this, () => this.settings.pageAttachmentFolder);
+		registerEmptyUntitledCleanup(this, () => this.settings.deleteEmptyUntitled);
 		this.addSettingTab(new ZimWikiLayoutSettingTab(this.app, this));
 	}
 

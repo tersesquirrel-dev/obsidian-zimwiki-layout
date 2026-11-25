@@ -2,7 +2,7 @@
 	"id": "zimwiki-layout",
 	"name": "ZimWiki Layout",
 	"version": "0.0.1",
-	"minAppVersion": "1.4.10",
+	"minAppVersion": "1.6.6",
 	"description": "Makes the file explorer behave like a ZimWiki notebook tree.",
 	"author": "Damon Achey",
 	"isDesktopOnly": false

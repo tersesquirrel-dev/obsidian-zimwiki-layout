@@ -15,6 +15,8 @@ export interface ZimWikiLayoutSettings {
 	folderNotes: boolean;
 	/** Save attachments in a folder named after the page they are added to. */
 	pageAttachmentFolder: boolean;
+	/** Move empty "Untitled" notes to the trash when their tab is closed. */
+	deleteEmptyUntitled: boolean;
 }
 
 export const DEFAULT_SETTINGS: ZimWikiLayoutSettings = {
@@ -24,6 +26,7 @@ export const DEFAULT_SETTINGS: ZimWikiLayoutSettings = {
 	interleavedSort: true,
 	folderNotes: true,
 	pageAttachmentFolder: true,
+	deleteEmptyUntitled: true,
 };
 
 type ToggleKey = {
@@ -79,6 +82,12 @@ export class ZimWikiLayoutSettingTab extends PluginSettingTab {
 			'pageAttachmentFolder',
 			'Store attachments with the page',
 			'Save pasted and dropped attachments in a folder named after the page, beside the note. Overrides the attachment location in Files and links.',
+		);
+		this.addToggle(
+			containerEl,
+			'deleteEmptyUntitled',
+			'Delete empty untitled notes',
+			'Move an empty "Untitled" note to the trash when you close its tab or switch the tab to another note.',
 		);
 
 		new Setting(containerEl)

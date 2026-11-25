@@ -1,92 +1,59 @@
-# Obsidian Sample Plugin
+# ZimWiki Layout
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+An Obsidian plugin that makes the file explorer behave like a [Zim](https://zim-wiki.org) notebook tree. In Zim every page can have sub-pages and attachments, and the tree shows pages, not files. This plugin brings that layout to an Obsidian vault without changing how your notes are stored.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+A Zim page with sub-pages maps onto a note and a folder of the same name beside it:
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and outputs a Notice on click.
-- Registers a global interval which logs 'setInterval' to the console.
-
-## First time developing plugins?
-
-Quick starting guide for new plugin devs:
-
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `src/main.ts` to `main.js`.
-- Make changes to `src/main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
-
-## Releasing new releases
-
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-## Adding your plugin to the community plugin list
-
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-## How to use
-
-- Clone this repo.
-- Make sure your NodeJS is at least v18 (`node --version`).
-- `npm i` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint
-
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-	"fundingUrl": "https://buymeacoffee.com"
-}
+```
+Projects.md          ← the page
+Projects/            ← its sub-pages and attachments
+    Plan.md
+    Plan/
+        diagram.png
+    Budget.md
 ```
 
-If you have multiple URLs, you can also do:
+## Features
 
-```json
-{
-	"fundingUrl": {
-		"Buy Me a Coffee": "https://buymeacoffee.com",
-		"GitHub Sponsor": "https://github.com/sponsors",
-		"Patreon": "https://www.patreon.com/"
-	}
-}
+Each feature can be turned on or off in **Settings → ZimWiki Layout**. All of them are on by default.
+
+- **Folder notes:** a note and the folder of the same name beside it appear as one item. Selecting the folder's name opens the note and expands the folder. The arrow still expands and collapses it.
+- **Interleaved sort:** files and folders are sorted together by name instead of folders first. This applies to the file name sort orders. Sorting by modified or created time keeps Obsidian's default.
+- **Show only notes:** attachments and other non-Markdown files are hidden, along with folders that have no notes anywhere inside them.
+- **Show folder count:** each folder shows how many sub-pages it has.
+- **Store attachments with the page:** pasted and dropped attachments are saved in the folder named after the page, e.g. `Projects/Plan/diagram.png` for `Projects/Plan.md`. The folder is created when needed. This overrides the attachment location in **Settings → Files and links**. Turn it off to use Obsidian's own setting again.
+- **Delete empty untitled notes:** when the last tab showing an empty `Untitled` note closes, or switches to another note, the note is moved to the trash, following your setting in **Settings → Files and links → Deleted files**. A note is kept if it has any text or a folder of sub-pages beside it. Only the English default names are recognised (`Untitled`, `Untitled 1`, ...).
+- **Hidden folders:** folders listed here are hidden from the file explorer with everything inside them. Their notes still work for templates, links and search. `Templates` is hidden by default.
+
+Pages are also shown brighter than plain folders: notes and folders with a folder note use the normal text colour, while folders without one are dimmed.
+
+The plugin only changes how the file explorer shows the vault and where new attachments are saved. It never moves, renames or edits existing files (apart from trashing empty untitled notes), and turning it off restores Obsidian's default explorer.
+
+## Compatibility
+
+The file explorer and attachment changes rely on undocumented Obsidian internals, so an Obsidian update may break them until the plugin is updated. If the internals it needs are missing, the plugin leaves that part of Obsidian unchanged rather than failing.
+
+Works on desktop and mobile. Requires Obsidian 1.6.6 or later.
+
+## Installation
+
+The plugin isn't in the community plugin list yet. To install it manually, copy `main.js`, `manifest.json` and `styles.css` from a [release](https://github.com/tersesquirrel-dev/obsidian-zimwiki-layout/releases), or from your own build, into `<Vault>/.obsidian/plugins/zimwiki-layout/`. Then reload Obsidian and enable **ZimWiki Layout** in **Settings → Community plugins**.
+
+## Development
+
+Requires Node.js 18 or later.
+
+```sh
+npm install
+npm run dev      # rebuild on change
+npm run build    # type-check and production build
+npm run lint
 ```
 
-## API Documentation
+Every successful build is copied into a vault automatically. The vault defaults to `Notes`, three folders above this repository; set `OBSIDIAN_VAULT` to use a different one. The copy is skipped in CI and when no vault is found. Run `npm run deploy` to copy the current build without rebuilding. Reload the plugin in Obsidian to pick up the new build.
 
-See https://docs.obsidian.md
+To release, bump the version with `npm version patch` (or `minor`/`major`), then push the commit and tag with `git push --follow-tags`. The release workflow builds the plugin and creates a draft GitHub release with the files attached; publish it from GitHub.
+
+## License
+
+[0BSD](LICENSE)
