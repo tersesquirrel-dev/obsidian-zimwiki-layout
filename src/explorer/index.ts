@@ -9,9 +9,10 @@ import { patchActiveHighlight, patchFolderClick } from './folder-note-patch';
 
 /**
  * Applies the ZimWiki-style changes to the file explorer once it exists,
- * and undoes them when the plugin unloads.
+ * and undoes them when the plugin unloads. Returns a function that
+ * refreshes the explorer, e.g. after settings change.
  */
-export function registerExplorerPatches(plugin: Plugin): void {
+export function registerExplorerPatches(plugin: Plugin): () => void {
 	const { workspace, vault } = plugin.app;
 	let patchedView: FileExplorerView | null = null;
 	let folderClickPatched = false;
@@ -78,4 +79,8 @@ export function registerExplorerPatches(plugin: Plugin): void {
 		plugin.registerEvent(vault.on('delete', onVaultChange));
 		plugin.registerEvent(vault.on('rename', onVaultChange));
 	});
+
+	return () => {
+		if (patchedView) refresh();
+	};
 }
