@@ -1,5 +1,6 @@
-import { App, normalizePath, PluginSettingTab, Setting } from 'obsidian';
+import { App, normalizePath, PluginSettingTab, Setting, TFolder } from 'obsidian';
 import type ZimWikiLayoutPlugin from './main';
+import { FolderSuggest } from './ui/folder-suggest';
 
 export interface ZimWikiLayoutSettings {
 	/** Vault-relative folder paths hidden from the file explorer. */
@@ -10,14 +11,10 @@ export const DEFAULT_SETTINGS: ZimWikiLayoutSettings = {
 	hiddenFolders: ['Templates'],
 };
 
-/** Turns free text (one path per line) into clean, unique folder paths. */
-export function parseFolderList(text: string): string[] {
-	const paths = text
-		.split('\n')
-		.map((line) => line.trim().replace(/^\/+|\/+$/g, ''))
-		.filter((line) => line.length > 0)
-		.map((line) => normalizePath(line));
-	return [...new Set(paths)];
+/** Cleans a typed folder path: trims spaces and surrounding slashes. */
+function cleanFolderPath(text: string): string {
+	const trimmed = text.trim().replace(/^\/+|\/+$/g, '');
+	return trimmed ? normalizePath(trimmed) : '';
 }
 
 export class ZimWikiLayoutSettingTab extends PluginSettingTab {
@@ -35,18 +32,74 @@ export class ZimWikiLayoutSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('Hidden folders')
 			.setDesc(
-				'Folders to hide from the file explorer, one path per line. Their notes still work for templates, links and search.',
+				'Folders hidden from the file explorer, along with everything inside them. Their notes still work for templates, links and search.',
 			)
-			.addTextArea((text) => {
-				text
-					.setPlaceholder('Templates')
-					.setValue(this.plugin.settings.hiddenFolders.join('\n'))
-					.onChange(async (value) => {
-						await this.plugin.updateSettings({
-							hiddenFolders: parseFolderList(value),
-						});
-					});
-				text.inputEl.rows = 5;
+			.setHeading();
+
+		this.renderHiddenFolders(containerEl);
+		this.renderAddFolder(containerEl);
+	}
+
+	private renderHiddenFolders(containerEl: HTMLElement): void {
+		const { hiddenFolders } = this.plugin.settings;
+		if (hiddenFolders.length === 0) {
+			new Setting(containerEl).setDesc('No folders are hidden.');
+			return;
+		}
+
+		for (const path of hiddenFolders) {
+			const exists = this.app.vault.getAbstractFileByPath(path) instanceof TFolder;
+			new Setting(containerEl)
+				.setName(path)
+				.setDesc(exists ? '' : 'Folder not found in this vault.')
+				.addExtraButton((button) =>
+					button
+						.setIcon('x')
+						.setTooltip('Remove')
+						.onClick(async () => {
+							await this.plugin.updateSettings({
+								hiddenFolders: hiddenFolders.filter((p) => p !== path),
+							});
+							this.display();
+						}),
+				);
+		}
+	}
+
+	private renderAddFolder(containerEl: HTMLElement): void {
+		let pending = '';
+
+		const add = async () => {
+			const path = cleanFolderPath(pending);
+			const { hiddenFolders } = this.plugin.settings;
+			if (!path || hiddenFolders.includes(path)) return;
+			await this.plugin.updateSettings({
+				hiddenFolders: [...hiddenFolders, path],
 			});
+			this.display();
+		};
+
+		new Setting(containerEl)
+			.setName('Add folder')
+			.addText((text) => {
+				text.setPlaceholder('Folder path').onChange((value) => {
+					pending = value;
+				});
+				new FolderSuggest(
+					this.app,
+					text.inputEl,
+					() => this.plugin.settings.hiddenFolders,
+					(folder) => {
+						pending = folder.path;
+						void add();
+					},
+				);
+				text.inputEl.addEventListener('keydown', (evt) => {
+					if (evt.key === 'Enter') void add();
+				});
+			})
+			.addButton((button) =>
+				button.setButtonText('Add').setCta().onClick(() => void add()),
+			);
 	}
 }
