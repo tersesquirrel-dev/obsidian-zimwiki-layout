@@ -1,3 +1,15 @@
+/*
+ * Real pages (notes, and folders with a folder note) are brighter than plain
+ * folders. Only the base colour changes, so hover/active states still apply.
+ */
+.nav-files-container .tree-item-self.zimwiki-page {
+	--nav-item-color: var(--text-normal);
+}
+
+.nav-files-container .tree-item-self.zimwiki-not-page {
+	--nav-item-color: var(--text-faint);
+}
+
 /* Sub-page count shown at the right of a folder in the file explorer. */
 .nav-folder-title .zimwiki-folder-count {
 	margin-inline-start: auto;
