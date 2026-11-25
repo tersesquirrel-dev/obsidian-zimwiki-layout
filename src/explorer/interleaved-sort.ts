@@ -1,7 +1,4 @@
 import { TAbstractFile, TFile, TFolder } from 'obsidian';
-import type { FileExplorerView } from './file-explorer';
-
-type GetSortedFolderItems = FileExplorerView['getSortedFolderItems'];
 
 // Same collation options Obsidian uses for its alphabetical sort.
 const collator = new Intl.Collator(undefined, {
@@ -25,41 +22,20 @@ function compareByName(a: TAbstractFile, b: TAbstractFile): number {
 }
 
 /**
- * Replaces the file explorer's folder sort so files and folders are interleaved
- * by name. Only alphabetical sort orders are changed; time-based orders keep
- * Obsidian's default behaviour. Returns a function that restores the original.
+ * Whether this explorer sort order should interleave files and folders.
+ * Time-based orders keep Obsidian's default, since folders have no times.
  */
-export function patchInterleavedSort(view: FileExplorerView): () => void {
-	const proto = Object.getPrototypeOf(view) as FileExplorerView;
-	const original: GetSortedFolderItems = proto.getSortedFolderItems;
+export function usesInterleavedSort(sortOrder: string): boolean {
+	return sortOrder === 'alphabetical' || sortOrder === 'alphabeticalReverse';
+}
 
-	const patched: GetSortedFolderItems = function (
-		this: FileExplorerView,
-		folder: TFolder,
-	) {
-		const reverse = this.sortOrder === 'alphabeticalReverse';
-		if (this.sortOrder !== 'alphabetical' && !reverse) {
-			return original.call(this, folder);
-		}
-
-		const children = folder.children.slice();
-		children.sort((a, b) =>
-			reverse ? compareByName(b, a) : compareByName(a, b),
-		);
-
-		const items: unknown[] = [];
-		for (const child of children) {
-			const item = this.fileItems[child.path];
-			if (item) items.push(item);
-		}
-		return items;
-	};
-
-	proto.getSortedFolderItems = patched;
-
-	return () => {
-		if (proto.getSortedFolderItems === patched) {
-			proto.getSortedFolderItems = original;
-		}
-	};
+/** Sorts files and folders together by name. */
+export function sortInterleaved(
+	children: TAbstractFile[],
+	sortOrder: string,
+): TAbstractFile[] {
+	const reverse = sortOrder === 'alphabeticalReverse';
+	return children
+		.slice()
+		.sort((a, b) => (reverse ? compareByName(b, a) : compareByName(a, b)));
 }

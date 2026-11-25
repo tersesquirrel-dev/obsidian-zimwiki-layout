@@ -4,7 +4,7 @@ import {
 	FileExplorerView,
 	getFileExplorerViews,
 } from './file-explorer';
-import { patchInterleavedSort } from './interleaved-sort';
+import { patchFolderItems } from './folder-items-patch';
 
 /**
  * Applies the ZimWiki-style changes to the file explorer once it exists,
@@ -30,7 +30,7 @@ export function registerExplorerPatches(plugin: Plugin): void {
 		if (!view) return;
 
 		patchedView = view;
-		const unpatch = patchInterleavedSort(view);
+		const unpatch = patchFolderItems(view);
 		plugin.register(() => {
 			unpatch();
 			resortAll();
