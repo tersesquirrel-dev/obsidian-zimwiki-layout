@@ -42,5 +42,15 @@ export function registerExplorerPatches(plugin: Plugin): void {
 		tryPatch();
 		// The file explorer may be opened later (or was closed at startup).
 		plugin.registerEvent(workspace.on('layout-change', tryPatch));
+
+		// Folder visibility depends on what is nested deep inside, which
+		// Obsidian doesn't re-check on its own. requestSort is debounced.
+		const { vault } = plugin.app;
+		const onVaultChange = () => {
+			if (patchedView) resortAll();
+		};
+		plugin.registerEvent(vault.on('create', onVaultChange));
+		plugin.registerEvent(vault.on('delete', onVaultChange));
+		plugin.registerEvent(vault.on('rename', onVaultChange));
 	});
 }
