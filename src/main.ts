@@ -1,6 +1,6 @@
 import { Plugin } from 'obsidian';
 import { registerExplorerPatches } from './explorer';
-import { setHiddenFolders } from './explorer/visibility';
+import { setExplorerOptions } from './explorer/options';
 import {
 	DEFAULT_SETTINGS,
 	ZimWikiLayoutSettings,
@@ -30,6 +30,6 @@ export default class ZimWikiLayoutPlugin extends Plugin {
 	}
 
 	private applySettings() {
-		setHiddenFolders(this.settings.hiddenFolders);
+		setExplorerOptions(this.settings);
 	}
 }

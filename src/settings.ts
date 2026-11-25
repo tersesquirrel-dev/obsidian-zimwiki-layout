@@ -5,11 +5,29 @@ import { FolderSuggest } from './ui/folder-suggest';
 export interface ZimWikiLayoutSettings {
 	/** Vault-relative folder paths hidden from the file explorer. */
 	hiddenFolders: string[];
+	/** Show how many sub-pages each folder has. */
+	showFolderCount: boolean;
+	/** Hide non-Markdown files and folders that contain no notes. */
+	showOnlyNotes: boolean;
+	/** Sort files and folders together by name instead of folders first. */
+	interleavedSort: boolean;
+	/** Merge a note with the same-named folder beside it into one item. */
+	folderNotes: boolean;
 }
 
 export const DEFAULT_SETTINGS: ZimWikiLayoutSettings = {
 	hiddenFolders: ['Templates'],
+	showFolderCount: true,
+	showOnlyNotes: true,
+	interleavedSort: true,
+	folderNotes: true,
 };
+
+type ToggleKey = {
+	[K in keyof ZimWikiLayoutSettings]: ZimWikiLayoutSettings[K] extends boolean
+		? K
+		: never;
+}[keyof ZimWikiLayoutSettings];
 
 /** Cleans a typed folder path: trims spaces and surrounding slashes. */
 function cleanFolderPath(text: string): string {
@@ -29,6 +47,31 @@ export class ZimWikiLayoutSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
+		this.addToggle(
+			containerEl,
+			'folderNotes',
+			'Folder notes',
+			'Show a note and the folder of the same name beside it as one item. Selecting the folder opens the note.',
+		);
+		this.addToggle(
+			containerEl,
+			'interleavedSort',
+			'Interleaved sort',
+			'Sort files and folders together by name instead of listing folders first. Applies to the file name sort orders.',
+		);
+		this.addToggle(
+			containerEl,
+			'showOnlyNotes',
+			'Show only notes',
+			'Hide attachments and other non-Markdown files, and folders with no notes inside them.',
+		);
+		this.addToggle(
+			containerEl,
+			'showFolderCount',
+			'Show folder count',
+			'Show how many sub-pages each folder has.',
+		);
+
 		new Setting(containerEl)
 			.setName('Hidden folders')
 			.setDesc(
@@ -38,6 +81,22 @@ export class ZimWikiLayoutSettingTab extends PluginSettingTab {
 
 		this.renderHiddenFolders(containerEl);
 		this.renderAddFolder(containerEl);
+	}
+
+	private addToggle(
+		containerEl: HTMLElement,
+		key: ToggleKey,
+		name: string,
+		desc: string,
+	): void {
+		new Setting(containerEl)
+			.setName(name)
+			.setDesc(desc)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings[key]).onChange(async (value) => {
+					await this.plugin.updateSettings({ [key]: value });
+				}),
+			);
 	}
 
 	private renderHiddenFolders(containerEl: HTMLElement): void {

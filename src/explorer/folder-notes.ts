@@ -1,4 +1,5 @@
 import { TAbstractFile, TFile, TFolder } from 'obsidian';
+import { explorerOptions } from './options';
 import { isVisibleFolder } from './visibility';
 
 /*
@@ -9,6 +10,7 @@ import { isVisibleFolder } from './visibility';
 
 /** The note paired with this folder, if the folder is shown in the explorer. */
 export function getFolderNote(folder: TFolder): TFile | null {
+	if (!explorerOptions().folderNotes) return null;
 	if (folder.isRoot() || !isVisibleFolder(folder)) return null;
 	const note = folder.vault.getAbstractFileByPath(`${folder.path}.md`);
 	return note instanceof TFile ? note : null;
@@ -16,6 +18,7 @@ export function getFolderNote(folder: TFolder): TFile | null {
 
 /** The visible folder this note is paired with, if any. */
 export function getNoteFolder(file: TAbstractFile): TFolder | null {
+	if (!explorerOptions().folderNotes) return null;
 	if (!(file instanceof TFile) || file.extension !== 'md') return null;
 	const folderPath = file.path.slice(0, -'.md'.length);
 	const folder = file.vault.getAbstractFileByPath(folderPath);

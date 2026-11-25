@@ -2,6 +2,7 @@ import { TFolder } from 'obsidian';
 import { ExplorerItem, FileExplorerView, replaceMethod } from './file-explorer';
 import { clearFolderCounts, setFolderCount } from './folder-count';
 import { sortInterleaved, usesInterleavedSort } from './interleaved-sort';
+import { explorerOptions } from './options';
 import { clearPageStyles, setPageStyle } from './page-style';
 import { isVisibleInExplorer } from './visibility';
 
@@ -35,7 +36,10 @@ export function patchFolderItems(view: FileExplorerView): () => void {
 		}
 
 		const folderItem = this.fileItems[folder.path];
-		if (folderItem) setFolderCount(folderItem, items.length);
+		if (folderItem) {
+			const showCount = explorerOptions().showFolderCount;
+			setFolderCount(folderItem, showCount ? items.length : 0);
+		}
 		for (const item of items) setPageStyle(item);
 		return items;
 	});

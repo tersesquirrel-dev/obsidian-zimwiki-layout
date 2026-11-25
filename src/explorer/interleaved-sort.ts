@@ -1,4 +1,5 @@
 import { TAbstractFile, TFile, TFolder } from 'obsidian';
+import { explorerOptions } from './options';
 
 // Same collation options Obsidian uses for its alphabetical sort.
 const collator = new Intl.Collator(undefined, {
@@ -22,10 +23,11 @@ function compareByName(a: TAbstractFile, b: TAbstractFile): number {
 }
 
 /**
- * Whether this explorer sort order should interleave files and folders.
+ * Whether files and folders should be interleaved for this sort order.
  * Time-based orders keep Obsidian's default, since folders have no times.
  */
 export function usesInterleavedSort(sortOrder: string): boolean {
+	if (!explorerOptions().interleavedSort) return false;
 	return sortOrder === 'alphabetical' || sortOrder === 'alphabeticalReverse';
 }
 
